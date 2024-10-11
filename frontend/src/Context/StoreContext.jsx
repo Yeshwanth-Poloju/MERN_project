@@ -6,7 +6,7 @@ export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
-  const url = "http://localhost:5173"; // Add the protocol (http://)
+  const url = "http://localhost:4000"; // Add the protocol (http://)
   const [token, setToken] = useState("");
   const [food_list, setFoodList] = useState([]);
 
@@ -58,7 +58,7 @@ const StoreContextProvider = (props) => {
   };
 
   const fetchFoodList = async () => {
-    const response = await axios.get(url + "/api/food/list");
+    const response = await axios.get(url+"/api/food/list");
     if (response.data.success) {
       setFoodList(response.data.data);
     } else {
