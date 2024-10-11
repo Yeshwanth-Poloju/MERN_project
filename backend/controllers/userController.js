@@ -132,4 +132,90 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, verifyOTP };
+// Forgot password (send OTP to email)
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "User doesn't exist" });
+    }
+
+    // Generate and save OTP
+    const otp = generateOTP();
+    user.otp = otp;
+    await user.save();
+
+    // Send OTP to user's email
+    await sendOTPEmail(user.email, otp);
+
+    res.json({ success: true, message: "OTP sent to your email for password reset." });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error during OTP generation" });
+  }
+};
+
+// Verify OTP during password reset
+const verifyPasswordResetOTP = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "User doesn't exist" });
+    }
+
+    if (user.otp !== otp) {
+      return res.json({ success: false, message: "Invalid OTP" });
+    }
+
+    // OTP is valid, allow the user to reset their password
+    res.json({ success: true, message: "OTP verified. You can now reset your password." });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error during OTP verification" });
+  }
+};
+
+// Reset password after OTP verification
+const resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "User doesn't exist" });
+    }
+
+    if (password.length < 8) {
+      return res.json({
+        success: false,
+        message: "Please enter a strong password",
+      });
+    }
+
+    // Hash the new password and update the user record
+    const salt = await bcrypt.genSalt(Number(process.env.SALT));
+    const hashedPassword = await bcrypt.hash(password, salt);
+    user.password = hashedPassword;
+    user.otp = null; // Clear the OTP after successful password reset
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successfully." });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error during password reset" });
+  }
+};
+
+export { 
+  loginUser, 
+  registerUser, 
+  verifyOTP, 
+  forgotPassword, 
+  verifyPasswordResetOTP, 
+  resetPassword 
+};
+
