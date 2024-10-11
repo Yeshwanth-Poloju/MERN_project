@@ -1,10 +1,13 @@
 import orderModel from "../models/orderModels.js";
 import userModel from "../models/userModel.js";
-import Stripe from "stripe";
+import Razorpay from "razorpay";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,  // Your Razorpay Key ID
+  key_secret: process.env.RAZORPAY_SECRET_KEY,  // Your Razorpay Secret
+});
 
-// placing user order for frontend
+// Placing user order for frontend
 const placeOrder = async (req, res) => {
   const frontend_url = "http://localhost:5173";
   try {
@@ -17,36 +20,17 @@ const placeOrder = async (req, res) => {
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
-    const line_items = req.body.items.map((item) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item.name,
-        },
-        unit_amount: item.price * 100,
-      },
-      quantity: item.quantity,
-    }));
+    // Create an order in Razorpay
+    const options = {
+      amount: req.body.amount * 100, // amount in the smallest currency unit
+      currency: "INR",
+      receipt: `receipt_${newOrder._id}`,
+      payment_capture: 1, // Automatically capture payment
+    };
 
-    line_items.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: "Delivery Charges",
-        },
-        unit_amount: 2 * 100,
-      },
-      quantity: 1,
-    });
+    const order = await razorpay.orders.create(options);
 
-    const session = await stripe.checkout.sessions.create({
-      line_items: line_items,
-      mode: "payment",
-      success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
-      cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
-    });
-
-    res.json({ success: true, session_url: session.url });
+    res.json({ success: true, orderId: order.id, amount: order.amount, currency: order.currency });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: "Error" });
@@ -54,9 +38,12 @@ const placeOrder = async (req, res) => {
 };
 
 const verifyOrder = async (req, res) => {
-  const { orderId, success } = req.body;
+  const { orderId, paymentId } = req.body; // Assuming paymentId is sent from the frontend
   try {
-    if (success == "true") {
+    // Verify payment by checking if the paymentId matches with the orderId
+    const paymentDetails = await razorpay.payments.fetch(paymentId);
+
+    if (paymentDetails.order_id === orderId) {
       await orderModel.findByIdAndUpdate(orderId, { payment: true });
       res.json({ success: true, message: "Paid" });
     } else {
@@ -69,7 +56,7 @@ const verifyOrder = async (req, res) => {
   }
 };
 
-// user orders for frontend
+// User orders for frontend
 const userOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({ userId: req.body.userId });
@@ -80,7 +67,7 @@ const userOrders = async (req, res) => {
   }
 };
 
-// Listing orders for admin pannel
+// Listing orders for admin panel
 const listOrders = async (req, res) => {
   try {
     let userData = await userModel.findById(req.body.userId);
@@ -96,7 +83,7 @@ const listOrders = async (req, res) => {
   }
 };
 
-// api for updating status
+// API for updating status
 const updateStatus = async (req, res) => {
   try {
     let userData = await userModel.findById(req.body.userId);
@@ -105,7 +92,7 @@ const updateStatus = async (req, res) => {
         status: req.body.status,
       });
       res.json({ success: true, message: "Status Updated Successfully" });
-    }else{
+    } else {
       res.json({ success: false, message: "You are not an admin" });
     }
   } catch (error) {
