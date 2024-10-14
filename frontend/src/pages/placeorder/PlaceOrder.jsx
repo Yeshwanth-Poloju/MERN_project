@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 const PlaceOrder = () => {
   const navigate = useNavigate();
-  const { getTotalCartAmount, token, food_list, cartItems, url } =
+  const { getTotalCartAmount, token, food_list, cartItems, setCartItems, url } =
     useContext(StoreContext);
   const [data, setData] = useState({
     firstName: "",
@@ -43,6 +43,12 @@ const PlaceOrder = () => {
       toast.error("Razorpay SDK failed to load. Are you online?");
       return;
     }
+    const clearCart = () => {
+      // Assuming you have a state variable called `cartItems` and a function to set it
+      setCartItems([]); // Clear the cart items
+      localStorage.removeItem('cartData'); // If you are using local storage to manage cart
+    };
+    
 
     const options = {
       key: "rzp_test_USUKqObpxVODG3", // Enter Razorpay Key ID
@@ -62,7 +68,8 @@ const PlaceOrder = () => {
         let verifyResponse = await axios.post(url + "/api/order/verify", paymentData, { headers: { token } });
         if (verifyResponse.data.success) {
           toast.success("Payment successful!");
-          navigate("/orders");
+          clearCart();
+          navigate("/myorders");
         } else {
           toast.error("Payment failed. Please try again.");
         }
