@@ -1,14 +1,16 @@
-.login-popup{
+.login-popup {
     position: absolute;
     z-index: 1;
     width: 100%;
     height: 100%;
     background-color: #00000090;
-    display: grid; 
+    display: grid;
+    animation: fadeIn 0.5s; /* Smooth fade-in animation */
 }
-.login-popup-container{
+
+.login-popup-container {
     place-self: center;
-    width:max(23vw,330px);
+    width: max(23vw, 330px);
     color: #808080;
     background-color: white;
     display: flex;
@@ -18,30 +20,41 @@
     border-radius: 8px;
     font-size: 14px;
     animation: fadeIn 0.5s;
-
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for the container */
 }
-.login-popup-title{
+
+.login-popup-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: black;
 }
-.login-popup-title img{
+
+.login-popup-title img {
     width: 16px;
     cursor: pointer;
 }
-.login-popup-inputs{
+
+.login-popup-inputs {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
-.login-popup-inputs input{
+
+.login-popup-inputs input {
     outline: none;
     border: 1px solid #c9c9c9;
     padding: 10px;
     border-radius: 4px;
+    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus */
 }
-.login-popup-container button{
+
+.login-popup-inputs input:focus {
+    border-color: tomato;
+    box-shadow: 0 0 5px rgba(255, 99, 71, 0.5); /* Highlight on focus */
+}
+
+.login-popup-container button {
     border: none;
     padding: 10px;
     border-radius: 4px;
@@ -49,18 +62,75 @@
     background-color: tomato;
     font-size: 15px;
     cursor: pointer;
+    transition: background-color 0.3s; /* Smooth background transition on hover */
 }
-.login-popup-condition{
+
+.login-popup-container button:hover {
+    background-color: #e53935; /* Slightly darker tomato on hover */
+}
+
+.login-popup-condition {
     display: flex;
     align-items: start;
     gap: 8px;
     margin-top: -15px;
 }
-.login-popup-condition input{
+
+.login-popup-condition input {
     margin-top: 5px;
 }
-.login-popup p span{
+
+.login-popup p span {
     color: tomato;
     font-weight: 500;
     cursor: pointer;
+}
+
+.login-popup p span:hover {
+    text-decoration: underline; /* Hover effect on links */
+}
+
+/* Verification methods section */
+.verification-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.verification-methods label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.verification-methods input[type="radio"] {
+    accent-color: tomato; /* Custom radio button color */
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 600px) {
+    .login-popup-container {
+        width: 85vw; /* Make the container smaller on mobile */
+        font-size: 13px;
+    }
+
+    .login-popup-inputs input {
+        font-size: 13px;
+    }
+
+    .login-popup-container button {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* Fade-in animation for smoother appearance */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
