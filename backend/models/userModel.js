@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    phoneNumber: { type: String, required: true }, // Optional phone number for SMS OTP
+    phoneNumber: { type: String, required: false }, // Optional phone number for SMS OTP
     password: { type: String, required: true },
     role: { type: String, default: "user" },
     otp: { type: String }, // Temporary OTP storage

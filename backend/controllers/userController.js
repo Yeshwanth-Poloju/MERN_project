@@ -121,7 +121,7 @@ const registerUser = async (req, res) => {
     const newUser = new userModel({
       name,
       email,
-      phoneNumber,  
+      phoneNumber,
       password: hashedPassword,
       otp, // Only needed for OTP methods
       verified: false,

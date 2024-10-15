@@ -2,28 +2,27 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const AuthForm = ({ url, setToken, setShowLogin }) => {
-    const [currentState, setCurrentFormState] = useState("Login");  // For login/signup switch
+const AuthForm = ({ url, setToken, setShowLogin, setCurrentState }) => {
+    const [currentState, setCurrentFormState] = useState("Login");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState(""); // New phone number state
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [otpSent, setOtpSent] = useState(false);
     const [otp, setOtp] = useState("");
-    const [verificationMethod, setVerificationMethod] = useState("email-otp"); // Default verification method
+    const [verificationMethod, setVerificationMethod] = useState("email-otp");
 
     const handleAuth = async (event) => {
         event.preventDefault();
-    
+
         if (otpSent) {
             // OTP verification for signup
             try {
-                // Prepare the payload with the right data based on the verification method
                 const payload = verificationMethod === "sms-otp"
                     ? { phoneNumber, otp, verificationMethod }
-                    : { email, otp, verificationMethod };  // Make sure verificationMethod is always included
-    
-                const response = await axios.post(`${url}/api/user/verify-otp`, payload);  // Use the 'payload' variable here
+                    : { email, otp, verificationMethod };
+
+                const response = await axios.post(`${url}/api/user/verify-otp`, payload);
                 if (response.data.success) {
                     toast.success("OTP verified successfully. You can now log in.");
                     setOtpSent(false);
@@ -35,14 +34,13 @@ const AuthForm = ({ url, setToken, setShowLogin }) => {
                 toast.error("OTP verification failed. Please try again.");
             }
         } else {
-            // Login or Signup
             const endpoint = currentState === "Login" ? "/api/user/login" : "/api/user/register";
             const payload = currentState === "Login"
                 ? { email, password }
-                : { name, email, password, phoneNumber, verificationMethod };  // Payload for signup includes phoneNumber and verificationMethod
-    
+                : { name, email, password, phoneNumber, verificationMethod };
+
             try {
-                const response = await axios.post(`${url}${endpoint}`, payload);  // Use the 'payload' variable here
+                const response = await axios.post(`${url}${endpoint}`, payload);
                 if (response.data.success) {
                     if (currentState === "Login") {
                         setToken(response.data.token);
@@ -50,7 +48,6 @@ const AuthForm = ({ url, setToken, setShowLogin }) => {
                         toast.success("Login Successfully");
                         setShowLogin(false);
                     } else {
-                        // If signup, send OTP or verification link based on the selected method
                         setOtpSent(true);
                         toast.success("Signup successful. Please check your email for verification.");
                     }
@@ -62,7 +59,6 @@ const AuthForm = ({ url, setToken, setShowLogin }) => {
             }
         }
     };
-    
 
     return (
         <div className="login-popup">
@@ -93,7 +89,7 @@ const AuthForm = ({ url, setToken, setShowLogin }) => {
                                 required
                             />
                             <input
-                                name="phoneNumber" // New phone number field
+                                name="phoneNumber"
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 value={phoneNumber}
                                 type="tel"
@@ -155,11 +151,10 @@ const AuthForm = ({ url, setToken, setShowLogin }) => {
                     )}
                 </div>
 
-                <button type="submit">{otpSent ? "Verify OTP" : currentState === "Login" ? "Login" : "Sign Up"}</button>
-                {!otpSent && currentState === "Login" && (
+                <button type="submit">{otpSent ? "Verify OTP" : currentState === "Login" ? "Login" : "Sign Up"}</button>                {!otpSent && currentState === "Login" && (
                     <p>
                         Forgot Password?{" "}
-                        <span onClick={() => setCurrentFormState("Reset")}>Click here</span>
+                        <span onClick={() => setCurrentState("Reset")}>Click here</span>
                     </p>
                 )}
                 {!otpSent && (
