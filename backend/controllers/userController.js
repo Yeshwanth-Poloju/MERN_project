@@ -276,7 +276,7 @@ const verifyPasswordResetOTP = async (req, res) => {
 
 // Reset password
 const resetPassword = async (req, res) => {
-  const { email, newPassword } = req.body;
+  const { email, password } = req.body;
   try {
     const user = await userModel.findOne({ email });
 
@@ -285,7 +285,9 @@ const resetPassword = async (req, res) => {
     }
 
     const salt = await bcrypt.genSalt(Number(process.env.SALT));
-    user.password = await bcrypt.hash(newPassword, salt);
+    console.log(salt);
+    console.log(password);
+    user.password = await bcrypt.hash(password, salt);
     user.otp = null; // Clear OTP after password reset
     await user.save();
 
